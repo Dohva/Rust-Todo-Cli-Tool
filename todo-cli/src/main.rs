@@ -1,5 +1,5 @@
 use clap::{Parser, Subcommand};
-use std::fs;
+use std::{fs, io::Write, process};
 
 #[derive(Parser)]
 #[command(version, about, long_about = None)]
@@ -10,10 +10,8 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Commands {
-    Echo {
-        #[arg(short, long)]
-        content: String,
-    },
+    Echo { content: String },
+    Add { content: String },
 }
 
 fn main() {
@@ -29,6 +27,23 @@ fn main() {
     match &cli.command {
         Some(Commands::Echo { content }) => {
             println!("{content}");
+        }
+        Some(Commands::Add { content }) => {
+            let file_result = fs::OpenOptions::new()
+                .create(true)
+                .append(true)
+                .open(&source_file);
+
+            let mut file: fs::File;
+            match file_result {
+                Ok(opened_file) => file = opened_file,
+                Err(error) => {
+                    eprintln!("Error loading source file. Error: {error}");
+                    process::exit(1);
+                }
+            }
+            // TODO pack into separate method to allow smoother error handling, eg. returning error results
+            file.write(&content.as_bytes());
         }
         None => {}
     }
