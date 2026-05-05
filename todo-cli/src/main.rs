@@ -14,6 +14,18 @@ enum Commands {
     Add { content: String },
 }
 
+fn run(command: Commands, source_file_path: &str) -> Result<String, String>{
+    let result = match command {
+        Commands::Echo { content } => {
+            return Ok(content)
+        }
+        Commands::Add { content } => {
+            return Ok("not implemented")
+        }
+        None => return Err("Command not recognized")
+    }
+}
+
 fn main() {
     let source_file = "todos.txt";
     let cli = Cli::parse();
