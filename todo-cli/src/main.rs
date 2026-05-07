@@ -1,5 +1,5 @@
 use clap::{Parser, Subcommand};
-use std::{fs, io::Write, process};
+use std::{fs, io::Write};
 
 #[derive(Parser)]
 #[command(version, about, long_about = None)]
@@ -55,12 +55,6 @@ fn run(command: Option<Commands>, source_file_path: &str) -> Result<String, Stri
 fn main() {
     let source_file = "todos.txt";
     let cli = Cli::parse();
-
-    println!("checking if source file exists");
-    match fs::File::create_new(source_file) {
-        Ok(_file) => println!("File not found. Successfully created"),
-        Err(_error) => println!("File already exists"),
-    };
 
     match run(cli.command, source_file) {
         Ok(content) => println!("{content}"),
