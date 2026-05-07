@@ -14,16 +14,12 @@ enum Commands {
     Add { content: String },
 }
 
-fn run(command: Commands, source_file_path: &str) -> Result<String, String>{
-    let result = match command {
-        Commands::Echo { content } => {
-            return Ok(content)
-        }
-        Commands::Add { content } => {
-            return Ok("not implemented")
-        }
-        None => return Err("Command not recognized")
-    }
+fn run(command: Option<Commands>, source_file_path: &str) -> Result<String, String> {
+    match command {
+        Some(Commands::Echo { content }) => return Ok(content),
+        Some(Commands::Add { content }) => return Err(String::from("not implemented")),
+        None => return Err(String::from("Command not recognized")),
+    };
 }
 
 fn main() {
@@ -35,6 +31,13 @@ fn main() {
         Ok(_file) => println!("File not found. Successfully created"),
         Err(_error) => println!("File already exists"),
     };
+
+    match run(cli.command, source_file) {
+        Ok(content) => println!("{content}"),
+        Err(content) => eprintln!("Error prevented command completion: {content}")
+    }
+
+    return;
 
     match &cli.command {
         Some(Commands::Echo { content }) => {
