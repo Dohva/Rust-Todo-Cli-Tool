@@ -16,7 +16,7 @@ enum Commands {
 
 fn run(command: Option<Commands>, source_file_path: &str) -> Result<String, String> {
     match command {
-        Some(Commands::Echo { content }) => return Ok(content),
+        Some(Commands::Echo { content }) => Ok(content),
         Some(Commands::Add { content }) => {
             let file_result = fs::OpenOptions::new()
                 .create(true)
@@ -46,7 +46,7 @@ fn run(command: Option<Commands>, source_file_path: &str) -> Result<String, Stri
                 }
                 Err(_content) => return Err(String::from("Could not write to source file")),
             }
-            return Ok(format!("Successfully created task: \"{content}\""));
+            Ok(format!("Successfully created task: \"{content}\""))
         }
         None => Err(String::from("Command not recognized")),
     }
