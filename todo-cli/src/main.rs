@@ -21,7 +21,7 @@ fn run(command: Option<Commands>, source_file_path: &str) -> Result<String, Stri
             let file_result = fs::OpenOptions::new()
                 .create(true)
                 .append(true)
-                .open(&source_file_path);
+                .open(source_file_path);
 
             let mut file: fs::File;
             match file_result {
@@ -48,8 +48,8 @@ fn run(command: Option<Commands>, source_file_path: &str) -> Result<String, Stri
             }
             return Ok(format!("Successfully created task: \"{content}\""));
         }
-        None => return Err(String::from("Command not recognized")),
-    };
+        None => Err(String::from("Command not recognized")),
+    }
 }
 
 fn main() {
