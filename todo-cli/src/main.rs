@@ -13,7 +13,7 @@ struct Cli {
 enum Commands {
     Echo { content: String },
     Add { content: String },
-    List {},
+    Ls {},
 }
 
 fn add(content: &str, source_file_path: &str) -> Result<String, String> {
@@ -67,7 +67,7 @@ fn run(command: Option<Commands>, source_file_path: &str) -> Result<String, Stri
     match command {
         Some(Commands::Echo { content }) => Ok(content),
         Some(Commands::Add { content }) => add(&content, source_file_path),
-        Some(Commands::List {}) => list(source_file_path),
+        Some(Commands::Ls {}) => list(source_file_path),
         None => Err(String::from("Command not recognized")),
     }
 }
