@@ -1,6 +1,6 @@
 use clap::{Parser, Subcommand};
-use std::fs;
 use std::io::{self, BufRead, Write};
+use std::{fs, result, string};
 
 #[derive(Parser)]
 #[command(version, about, long_about = None)]
@@ -14,6 +14,7 @@ enum Commands {
     Echo { content: String },
     Add { content: String },
     Ls {},
+    Do { index: i32 },
 }
 
 fn add(content: &str, source_file_path: &str) -> Result<String, String> {
@@ -67,11 +68,58 @@ fn list(source_file_path: &str) -> Result<String, String> {
     Ok(result)
 }
 
+struct Todo {
+    id: usize,
+    content: String,
+}
+
+impl Todo {
+    fn new(id: usize, content: String) -> Todo {
+        Todo(id, content)
+    }
+}
+
+struct ToDoList {
+    tasks: Vec<Todo>,
+}
+
+impl ToDoList {
+    fn get_tasks_from_file(source_file_path: &str) -> Result<Vec<Todo>, String> {
+        let file = match fs::OpenOptions::new().read(true).open(source_file_path) {
+            Ok(file) => file,
+            Err(e) => return Err(format!("Could not open source file: {e}")),
+        };
+
+        let todos = Vec::new();
+        let errors = Vec::new();
+        for (i, line_result) in io::BufReader::new(file).lines().enumerate() {
+            match line_result {
+                Ok(line) => {
+                    todos.push(Todo::new(i, line))
+                },
+                Err(e) => errors.push(format!("[{}]Error reading line: {}", i, e)),
+            }
+        }
+
+        Ok(todos)
+    }
+}
+
+fn complete_task(index: i32, source_file_path: &str) -> Result<String, String> {
+    let file = match fs::OpenOptions::new().read(true).open(source_file_path) {
+        Ok(file) => file,
+        Err(e) => return Err(format!("Could not open source file: {e}")),
+    };
+
+    Ok(String::from(""))
+}
+
 fn run(command: Option<Commands>, source_file_path: &str) -> Result<String, String> {
     match command {
         Some(Commands::Echo { content }) => Ok(content),
         Some(Commands::Add { content }) => add(&content, source_file_path),
         Some(Commands::Ls {}) => list(source_file_path),
+        Some(Commands::Do { index }) => complete_task(index, source_file_path),
         None => Err(String::from("Command not recognized")),
     }
 }
