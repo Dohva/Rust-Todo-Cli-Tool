@@ -51,12 +51,16 @@ fn add(content: &str, source_file_path: &str) -> Result<String, String> {
 fn list(source_file_path: &str) -> Result<String, String> {
     let file = match fs::OpenOptions::new().read(true).open(source_file_path) {
         Ok(file) => file,
-        Err(_) => return Err(String::from("")),
+        Err(e) => return Err(format!("Could not open source file: {e}")),
     };
 
     let result = io::BufReader::new(file)
         .lines()
-        .map(|l| l.unwrap_or_else(|_| "".to_string()))
+        .enumerate()
+        .map(|(i, l)| match l {
+            Ok(line) => format!("[{}] {}", i + 1, line),
+            Err(e) => format!("[{}] ERROR reading line: {}", i, e),
+        })
         .collect::<Vec<String>>()
         .join("\n");
 
