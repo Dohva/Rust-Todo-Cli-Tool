@@ -1,6 +1,6 @@
 use clap::{Parser, Subcommand};
 use std::io::{self, BufRead, Write};
-use std::{fs, result, string};
+use std::{fs};
 
 #[derive(Parser)]
 #[command(version, about, long_about = None)]
@@ -68,50 +68,35 @@ fn list(source_file_path: &str) -> Result<String, String> {
     Ok(result)
 }
 
-struct Todo {
-    id: usize,
-    content: String,
-}
-
-impl Todo {
-    fn new(id: usize, content: String) -> Todo {
-        Todo(id, content)
-    }
-}
-
-struct ToDoList {
-    tasks: Vec<Todo>,
-}
-
-impl ToDoList {
-    fn get_tasks_from_file(source_file_path: &str) -> Result<Vec<Todo>, String> {
-        let file = match fs::OpenOptions::new().read(true).open(source_file_path) {
-            Ok(file) => file,
-            Err(e) => return Err(format!("Could not open source file: {e}")),
-        };
-
-        let todos = Vec::new();
-        let errors = Vec::new();
-        for (i, line_result) in io::BufReader::new(file).lines().enumerate() {
-            match line_result {
-                Ok(line) => {
-                    todos.push(Todo::new(i, line))
-                },
-                Err(e) => errors.push(format!("[{}]Error reading line: {}", i, e)),
-            }
-        }
-
-        Ok(todos)
-    }
-}
-
 fn complete_task(index: i32, source_file_path: &str) -> Result<String, String> {
-    let file = match fs::OpenOptions::new().read(true).open(source_file_path) {
+    let file = match fs::OpenOptions::new()
+        .read(true)
+        .write(true)
+        .open(source_file_path)
+    {
         Ok(file) => file,
         Err(e) => return Err(format!("Could not open source file: {e}")),
     };
 
-    Ok(String::from(""))
+    let lines = io::BufReader::new(file)
+        .lines()
+        .enumerate()
+        .map(|(i, l)| match l {
+            Ok(line) => format!("[{}] {}", i + 1, line),
+            Err(e) => format!("[{}] ERROR reading line: {}", i, e),
+        })
+        .collect::<Vec<String>>();
+
+    let target = format!("[{index}]");
+
+    let remaining_lines = lines
+        .iter()
+        .filter(|x| !x.starts_with(&target))
+        .collect::<Vec<&String>>();
+
+    
+
+    Ok(String::from("Completed item, if any, at provided index"))
 }
 
 fn run(command: Option<Commands>, source_file_path: &str) -> Result<String, String> {
