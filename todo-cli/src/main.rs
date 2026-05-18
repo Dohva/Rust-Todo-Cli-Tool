@@ -1,7 +1,7 @@
 #![warn(clippy::pedantic)]
 use clap::{Parser, Subcommand};
+use std::fs;
 use std::io::{self, BufRead, Write};
-use std::{fs};
 
 #[derive(Parser)]
 #[command(version, about, long_about = None)]
@@ -15,7 +15,7 @@ enum Commands {
     Echo { content: String },
     Add { content: String },
     Ls {},
-    Do { index: i32 },
+    Do { index: usize },
 }
 
 fn add(content: &str, source_file_path: &str) -> Result<String, String> {
@@ -69,11 +69,8 @@ fn list(source_file_path: &str) -> Result<String, String> {
     Ok(result)
 }
 
-fn complete_task(index: i32, source_file_path: &str) -> Result<String, String> {
-    let file = match fs::OpenOptions::new()
-        .read(true)
-        .open(source_file_path)
-    {
+fn complete_task(index: usize, source_file_path: &str) -> Result<String, String> {
+    let file = match fs::OpenOptions::new().read(true).open(source_file_path) {
         Ok(file) => file,
         Err(e) => return Err(format!("Could not open source file: {e}")),
     };
@@ -82,17 +79,15 @@ fn complete_task(index: i32, source_file_path: &str) -> Result<String, String> {
         .lines()
         .enumerate()
         .map(|(i, l)| match l {
-            Ok(line) => format!("[{}] {}", i + 1, line),
-            Err(e) => format!("[{}] ERROR reading line: {}", i, e),
+            Ok(line) => (i + 1, line),
+            Err(e) => (i, format!("ERROR reading line: {}", e)),
         })
-        .collect::<Vec<String>>();
-
-    let target = format!("[{index}]");
+        .collect::<Vec<(usize, String)>>();
 
     let remaining_lines = lines
         .iter()
-        .filter(|x| !x.starts_with(&target))
-        .map(|s| s.as_str())
+        .filter(|x| x.0 != index)
+        .map(|x| x.1.as_str())
         .collect::<Vec<&str>>()
         .join("\n");
 
@@ -108,14 +103,9 @@ fn complete_task(index: i32, source_file_path: &str) -> Result<String, String> {
     let bytes = remaining_lines.as_bytes();
 
     match file.write_all(bytes) {
-        Ok(_) => {
-            Ok(format!("Completed item [{index}]"))
-        }   ,
-        Err(error) => {
-            Err(format!("Error occured trying to write to file: {error}"))
-        } 
+        Ok(_) => Ok(format!("Completed item [{index}]")),
+        Err(error) => Err(format!("Error occured trying to write to file: {error}")),
     }
-
 }
 
 fn run(command: Option<Commands>, source_file_path: &str) -> Result<String, String> {
