@@ -1,3 +1,4 @@
+#![warn(clippy::pedantic)]
 use clap::{Parser, Subcommand};
 use std::io::{self, BufRead, Write};
 use std::{fs};
@@ -92,11 +93,30 @@ fn complete_task(index: i32, source_file_path: &str) -> Result<String, String> {
     let remaining_lines = lines
         .iter()
         .filter(|x| !x.starts_with(&target))
-        .collect::<Vec<&String>>();
+        .map(|s| s.as_str())
+        .collect::<Vec<&str>>()
+        .join("\n");
 
-    
+    let mut file = match fs::OpenOptions::new()
+        .write(true)
+        .truncate(true)
+        .open(source_file_path)
+    {
+        Ok(file) => file,
+        Err(e) => return Err(format!("Could not write to source file: {e}")),
+    };
 
-    Ok(String::from("Completed item, if any, at provided index"))
+    let bytes = remaining_lines.as_bytes();
+
+    match file.write_all(bytes) {
+        Ok(_) => {
+            Ok(format!("Completed item [{index}]"))
+        }   ,
+        Err(error) => {
+            Err(format!("Error occured trying to write to file: {error}"))
+        } 
+    }
+
 }
 
 fn run(command: Option<Commands>, source_file_path: &str) -> Result<String, String> {
