@@ -61,7 +61,7 @@ fn list(source_file_path: &str) -> Result<String, String> {
         .enumerate()
         .map(|(i, l)| match l {
             Ok(line) => format!("[{}] {}", i + 1, line),
-            Err(e) => format!("[{}] ERROR reading line: {}", i, e),
+            Err(e) => format!("[{i}] ERROR reading line: {e}"),
         })
         .collect::<Vec<String>>()
         .join("\n");
@@ -80,7 +80,7 @@ fn complete_task(index: usize, source_file_path: &str) -> Result<String, String>
         .enumerate()
         .map(|(i, l)| match l {
             Ok(line) => (i + 1, line),
-            Err(e) => (i, format!("ERROR reading line: {}", e)),
+            Err(e) => (i, format!("ERROR reading line: {e}")),
         })
         .collect::<Vec<(usize, String)>>();
 
@@ -103,7 +103,7 @@ fn complete_task(index: usize, source_file_path: &str) -> Result<String, String>
     let bytes = remaining_lines.as_bytes();
 
     match file.write_all(bytes) {
-        Ok(_) => Ok(format!("Completed item [{index}]")),
+        Ok(()) => Ok(format!("Completed item [{index}]")),
         Err(error) => Err(format!("Error occured trying to write to file: {error}")),
     }
 }
