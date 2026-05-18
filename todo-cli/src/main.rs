@@ -72,7 +72,6 @@ fn list(source_file_path: &str) -> Result<String, String> {
 fn complete_task(index: i32, source_file_path: &str) -> Result<String, String> {
     let file = match fs::OpenOptions::new()
         .read(true)
-        .write(true)
         .open(source_file_path)
     {
         Ok(file) => file,
